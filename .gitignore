@@ -15,7 +15,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib is source directory for xbmc plugin
+#lib/
 lib64/
 parts/
 sdist/
@@ -87,3 +88,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# PyCharm settings
+.idea
