@@ -13,5 +13,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#10001"
-msgid "Best Amv"
+msgid "Featured Amv"
+msgstr ""
+
+msgctxt "#10002"
+msgid "Previous Page"
+msgstr ""
+
+msgctxt "#10003"
+msgid "Next Page"
 msgstr ""
