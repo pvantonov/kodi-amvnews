@@ -2,7 +2,7 @@
 """
 Routing rules.
 """
-from amvnews.api import get_featured_amv_list
+from amvnews import get_featured_amv_list
 from constants import PLUGIN
 
 
@@ -19,9 +19,10 @@ def create_main_listing():
             'icon': None,
             'thumbnail': None,
             'context_menu': [],
-            'path': PLUGIN.url_for(endpoint='create_featured_amv_list', page=1)
+            'path': PLUGIN.url_for('create_featured_amv_list', page=1)
         }
     ]
+    PLUGIN.set_content('musicvideos')
     return items
 
 
@@ -56,18 +57,38 @@ def create_featured_amv_list(page):
                 'label': u'{} ({})'.format(amv['title'], amv['date']),
                 'icon': amv['image'],
                 'thumbnail': amv['image'],
-                'context_menu': [],
-                'path': amv['path'],
+                'context_menu': [
+                    ('Toggle watched', 'Action(ToggleWatched)'),
+                    ('AMV Info', 'Action(Info)')
+                ],
+                'path': PLUGIN.url_for('play_amv', amv_id=amv['id']),
                 'is_playable': True,
                 'info': {
                     'count': amv['id'],
                     'size': amv['size'],
+                    'director': amv['author'],
                     'plot': amv['description'],
-                    'genre': 'Anime Music Video',
-                    'raiting': amv['rating'] * 2,
+                    'aired': amv['aired'],
+                    'dateadded': amv['added'],
+                    'votes': amv['votes'],
+                    'genre': amv['genre'],
+                    'rating': amv['rating'] * 2,
+                    'userrating': 0,
                     'title': amv['title'],
                     'duration': amv['duration'],
                     'mediatype': 'musicvideo'
+                },
+                'stream_info': {
+                    'video': {
+                        'codec': amv['video_codec'],
+                        'aspect': amv['video_aspect'],
+                        'width': amv['video_width'],
+                        'height': amv['video_height'],
+                        'duration': amv['duration']
+                    },
+                    'audio': {
+                        'codec': amv['audio_codec']
+                    }
                 }
             }
         ])
@@ -83,4 +104,16 @@ def create_featured_amv_list(page):
             )
         }
     ])
+    PLUGIN.set_content('musicvideos')
     return items
+
+
+@PLUGIN.route('/play/<amv_id>')
+def play_amv(amv_id):
+    """
+    Play AMV.
+
+    :param int amv_id: AMV identifier.
+    """
+    metadata = PLUGIN.get_storage('amv_metadata')[int(amv_id)]
+    PLUGIN.set_resolved_url(metadata['path'], metadata.get('subtitles', None))
