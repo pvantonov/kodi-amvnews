@@ -19,7 +19,7 @@ def create_main_listing():
             'icon': None,
             'thumbnail': None,
             'context_menu': [],
-            'path': PLUGIN.url_for(endpoint='create_featured_amv_list', page=1)
+            'path': PLUGIN.url_for('create_featured_amv_list', page=1)
         }
     ]
     PLUGIN.set_content('musicvideos')
@@ -57,8 +57,10 @@ def create_featured_amv_list(page):
                 'label': u'{} ({})'.format(amv['title'], amv['date']),
                 'icon': amv['image'],
                 'thumbnail': amv['image'],
-                'context_menu': [],
-                'path': amv['path'],
+                'context_menu': [
+                    ('Toggle watched', 'Action(ToggleWatched)')
+                ],
+                'path': PLUGIN.url_for('play_amv', url=amv['path']),
                 'is_playable': True,
                 'info': {
                     'count': amv['id'],
@@ -68,7 +70,7 @@ def create_featured_amv_list(page):
                     'raiting': amv['rating'] * 2,
                     'title': amv['title'],
                     'duration': amv['duration'],
-                    'mediatype': 'musicvideos'
+                    'mediatype': 'musicvideo'
                 },
                 'stream_info': {
                     'video': {
@@ -98,3 +100,16 @@ def create_featured_amv_list(page):
     ])
     PLUGIN.set_content('musicvideos')
     return items
+
+
+@PLUGIN.route('/play/<url>')
+def play_amv(url):
+    """
+    Play AMV.
+
+    Though this function doesn't work nothing but returning file url to Kodi
+    it is necessary for marking as wathed to work properly. Possibly Kodi bug.
+
+    :param str url: AMV URL.
+    """
+    PLUGIN.set_resolved_url(url)
