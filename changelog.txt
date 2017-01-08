@@ -3,6 +3,7 @@
 - Caching
 - Stream info
 - AMV info
+- Subtitles support
 ### Fixed
 - Marking as watched works properly
 
