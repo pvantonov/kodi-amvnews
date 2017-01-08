@@ -55,10 +55,14 @@ def get_amv(amv_id):
 
     metadata = {
         'id': amv_id,
-        'title': html.find(itemprop='name').text.strip(),
+        'title': html.find('h1', itemprop='name').text.strip(),
         'description': html.find(itemprop='description').text.strip(),
         'rating': float(html.find(itemprop='ratingValue').text.strip()),
         'path': _get_full_url({'go': 'Files', 'file': 'down', 'id': amv_id}),
+        'votes': int(html.find(itemprop='ratingCount').text.strip()),
+        'author': html.find('span', itemprop='name').text.strip(),
+        'genre': ', '.join(
+            node.attrs['content'] for node in html.find_all(itemprop='genre')),
         'image': 'http://amvnews.ru{}'.format(
             html.find(itemprop='image').attrs['src'])
     }
@@ -96,10 +100,30 @@ def get_amv(amv_id):
     if match:
         width = int(match.groupdict()['width'])
         height = int(match.groupdict()['height'])
-        aspect = width / height
+        aspect = float(width) / float(height)
     metadata['video_width'] = width
     metadata['video_height'] = height
     metadata['video_aspect'] = aspect
+
+    aired = ''
+    match = REGEX_AMV_AIRED.match(html.find(attrs={'id': 'author-block'}).text)
+    if match:
+        day = match.groupdict()['day']
+        month = match.groupdict()['month']
+        year = match.groupdict()['year']
+        aired = '{}-{}-{}'.format(year, month, day)
+    metadata['aired'] = aired
+
+    added = ''
+    match = REGEX_AMV_ADDED.match(html.find(attrs={'id': 'sender-block'}).text)
+    if match:
+        day = match.groupdict()['day']
+        month = match.groupdict()['month']
+        year = match.groupdict()['year']
+        hour = match.groupdict()['hour']
+        minute = match.groupdict()['minute']
+        added = '{}-{}-{} {}:{}:00'.format(year, month, day, hour, minute)
+    metadata['added'] = added
 
     storage[amv_id] = metadata
     return metadata
@@ -129,10 +153,10 @@ def _get_html_page(url_params):
     return BeautifulSoup(urllib2.urlopen(_get_full_url(url_params)).read())
 
 
-REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$')
-REGEX_AMV_SIZE = re.compile(u'^.*Размер</b>: ((?P<size>[\d\.]+) Мб)?.*$')
-REGEX_AMV_CODECS = re.compile(u'^.*Кодеки</b>: (?P<video>.+)/(?P<audio>.+).*$')
-REGEX_AMV_RESOLUTION = re.compile(
-    u'^.*Разрешение</b>: (?P<width>\d+)x(?P<height>\d+)@(?P<fps>[\d\.]+).*$')
-REGEX_AMV_DURATION = re.compile(
-    u'^.*Длительность</b>: ((?P<min>\d+) мин )?((?P<sec>\d+) сек)?.*$')
+REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)  # noqa
+REGEX_AMV_SIZE = re.compile(u'^.*Размер</b>: ((?P<size>[\d\.]+) Мб)?.*$', re.S)  # noqa
+REGEX_AMV_CODECS = re.compile(u'^.*Кодеки</b>: (?P<video>.+?)/(?P<audio>.+?)<BR>.*$', re.S)  # noqa
+REGEX_AMV_RESOLUTION = re.compile(u'^.*Разрешение</b>: (?P<width>\d+)x(?P<height>\d+)@(?P<fps>[\d\.]+).*$', re.S)  # noqa
+REGEX_AMV_DURATION = re.compile(u'^.*Длительность</b>: ((?P<min>\d+) мин )?((?P<sec>\d+) сек)?.*$', re.S)  # noqa
+REGEX_AMV_AIRED = re.compile(u'^.*(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4}).*$', re.S)  # noqa
+REGEX_AMV_ADDED = re.compile(u'^.*(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4}).*(?P<hour>\d{2}):(?P<minute>\d{2}).*$', re.S)  # noqa

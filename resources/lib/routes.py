@@ -58,16 +58,22 @@ def create_featured_amv_list(page):
                 'icon': amv['image'],
                 'thumbnail': amv['image'],
                 'context_menu': [
-                    ('Toggle watched', 'Action(ToggleWatched)')
+                    ('Toggle watched', 'Action(ToggleWatched)'),
+                    ('AMV Info', 'Action(Info)')
                 ],
                 'path': PLUGIN.url_for('play_amv', url=amv['path']),
                 'is_playable': True,
                 'info': {
                     'count': amv['id'],
                     'size': amv['size'],
+                    'director': amv['author'],
                     'plot': amv['description'],
-                    'genre': 'Anime Music Video',
-                    'raiting': amv['rating'] * 2,
+                    'aired': amv['aired'],
+                    'dateadded': amv['added'],
+                    'votes': amv['votes'],
+                    'genre': amv['genre'],
+                    'rating': amv['rating'] * 2,
+                    'userrating': 0,
                     'title': amv['title'],
                     'duration': amv['duration'],
                     'mediatype': 'musicvideo'

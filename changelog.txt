@@ -2,6 +2,7 @@
 ### Added
 - Caching
 - Stream info
+- AMV info
 ### Fixed
 - Marking as watched works properly
 
