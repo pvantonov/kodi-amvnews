@@ -4,15 +4,15 @@ Unofficial API to http://amvnews.ru.
 """
 import urllib
 import urllib2
-
 import re
-
 from bs4 import BeautifulSoup
+from constants import PLUGIN
 
 
 __all__ = ['get_featured_amv_list', 'get_amv']
 
 
+@PLUGIN.cached(TTL=5)
 def get_featured_amv_list(page):
     """
     Get information about featured AMV.
@@ -47,6 +47,10 @@ def get_amv(amv_id):
     :return: AMV metadata.
     :rtype: dict
     """
+    storage = PLUGIN.get_storage('amvnews_amv_metadata')
+    if amv_id in storage:
+        return storage[amv_id]
+
     html = _get_html_page({'go': 'Files', 'in': 'view', 'id': amv_id})
 
     metadata = {
@@ -79,6 +83,7 @@ def get_amv(amv_id):
             size_in_bytes = int(float(size) * 1024 * 1024)
     metadata['size'] = size_in_bytes
 
+    storage[amv_id] = metadata
     return metadata
 
 
@@ -111,5 +116,3 @@ REGEX_AMV_DURATION = re.compile(
     u'^.*Длительность</b>: ((?P<min>\d+) мин )?((?P<sec>\d+) сек)?.*$')
 REGEX_AMV_SIZE = re.compile(
     u'^.*Размер</b>: ((?P<size>[\d\.]+) Мб)?.*$')
-
-get_featured_amv_list(1)

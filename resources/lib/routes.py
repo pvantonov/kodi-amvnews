@@ -2,7 +2,7 @@
 """
 Routing rules.
 """
-from amvnews.api import get_featured_amv_list
+from amvnews import get_featured_amv_list
 from constants import PLUGIN
 
 
