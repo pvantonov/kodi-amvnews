@@ -61,7 +61,7 @@ def create_featured_amv_list(page):
                     ('Toggle watched', 'Action(ToggleWatched)'),
                     ('AMV Info', 'Action(Info)')
                 ],
-                'path': PLUGIN.url_for('play_amv', url=amv['path']),
+                'path': PLUGIN.url_for('play_amv', amv_id=amv['id']),
                 'is_playable': True,
                 'info': {
                     'count': amv['id'],
@@ -108,14 +108,12 @@ def create_featured_amv_list(page):
     return items
 
 
-@PLUGIN.route('/play/<url>')
-def play_amv(url):
+@PLUGIN.route('/play/<amv_id>')
+def play_amv(amv_id):
     """
     Play AMV.
 
-    Though this function doesn't work nothing but returning file url to Kodi
-    it is necessary for marking as wathed to work properly. Possibly Kodi bug.
-
-    :param str url: AMV URL.
+    :param int amv_id: AMV identifier.
     """
-    PLUGIN.set_resolved_url(url)
+    metadata = PLUGIN.get_storage('amv_metadata')[int(amv_id)]
+    PLUGIN.set_resolved_url(metadata['path'], metadata.get('subtitles', None))

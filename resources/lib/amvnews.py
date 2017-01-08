@@ -47,7 +47,7 @@ def get_amv(amv_id):
     :return: AMV metadata.
     :rtype: dict
     """
-    storage = PLUGIN.get_storage('amvnews_amv_metadata')
+    storage = PLUGIN.get_storage('amv_metadata')
     if amv_id in storage:
         return storage[amv_id]
 
@@ -125,6 +125,14 @@ def get_amv(amv_id):
         added = '{}-{}-{} {}:{}:00'.format(year, month, day, hour, minute)
     metadata['added'] = added
 
+    subtitles_info = html.find(attrs={'id': 'subtitles-block'})
+    if subtitles_info:
+        subtitles_id = int(REGEX_AMV_SUB_ID.match(
+            subtitles_info.find('a').attrs['href']
+        ).groupdict()['id'])
+        metadata['subtitles'] = _get_full_url(
+            {'go': 'Files', 'file': 'down', 'sub': subtitles_id})
+
     storage[amv_id] = metadata
     return metadata
 
@@ -154,6 +162,7 @@ def _get_html_page(url_params):
 
 
 REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)  # noqa
+REGEX_AMV_SUB_ID = re.compile(u'^.*sub=(?P<id>\d+).*$', re.S)  # noqa
 REGEX_AMV_SIZE = re.compile(u'^.*Размер</b>: ((?P<size>[\d\.]+) Мб)?.*$', re.S)  # noqa
 REGEX_AMV_CODECS = re.compile(u'^.*Кодеки</b>: (?P<video>.+?)/(?P<audio>.+?)<BR>.*$', re.S)  # noqa
 REGEX_AMV_RESOLUTION = re.compile(u'^.*Разрешение</b>: (?P<width>\d+)x(?P<height>\d+)@(?P<fps>[\d\.]+).*$', re.S)  # noqa
