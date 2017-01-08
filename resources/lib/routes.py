@@ -22,6 +22,7 @@ def create_main_listing():
             'path': PLUGIN.url_for(endpoint='create_featured_amv_list', page=1)
         }
     ]
+    PLUGIN.set_content('musicvideos')
     return items
 
 
@@ -67,7 +68,19 @@ def create_featured_amv_list(page):
                     'raiting': amv['rating'] * 2,
                     'title': amv['title'],
                     'duration': amv['duration'],
-                    'mediatype': 'musicvideo'
+                    'mediatype': 'musicvideos'
+                },
+                'stream_info': {
+                    'video': {
+                        'codec': amv['video_codec'],
+                        'aspect': amv['video_aspect'],
+                        'width': amv['video_width'],
+                        'height': amv['video_height'],
+                        'duration': amv['duration']
+                    },
+                    'audio': {
+                        'codec': amv['audio_codec']
+                    }
                 }
             }
         ])
@@ -83,4 +96,5 @@ def create_featured_amv_list(page):
             )
         }
     ])
+    PLUGIN.set_content('musicvideos')
     return items

@@ -83,6 +83,24 @@ def get_amv(amv_id):
             size_in_bytes = int(float(size) * 1024 * 1024)
     metadata['size'] = size_in_bytes
 
+    video_codec, audio_codec = '', ''
+    match = REGEX_AMV_CODECS.match(file_info)
+    if match:
+        video_codec = match.groupdict()['video']
+        audio_codec = match.groupdict()['audio']
+    metadata['video_codec'] = video_codec
+    metadata['audio_codec'] = audio_codec
+
+    width, height, aspect = 0, 0, 0.0
+    match = REGEX_AMV_RESOLUTION.match(file_info)
+    if match:
+        width = int(match.groupdict()['width'])
+        height = int(match.groupdict()['height'])
+        aspect = width / height
+    metadata['video_width'] = width
+    metadata['video_height'] = height
+    metadata['video_aspect'] = aspect
+
     storage[amv_id] = metadata
     return metadata
 
@@ -112,7 +130,9 @@ def _get_html_page(url_params):
 
 
 REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$')
+REGEX_AMV_SIZE = re.compile(u'^.*Размер</b>: ((?P<size>[\d\.]+) Мб)?.*$')
+REGEX_AMV_CODECS = re.compile(u'^.*Кодеки</b>: (?P<video>.+)/(?P<audio>.+).*$')
+REGEX_AMV_RESOLUTION = re.compile(
+    u'^.*Разрешение</b>: (?P<width>\d+)x(?P<height>\d+)@(?P<fps>[\d\.]+).*$')
 REGEX_AMV_DURATION = re.compile(
     u'^.*Длительность</b>: ((?P<min>\d+) мин )?((?P<sec>\d+) сек)?.*$')
-REGEX_AMV_SIZE = re.compile(
-    u'^.*Размер</b>: ((?P<size>[\d\.]+) Мб)?.*$')
