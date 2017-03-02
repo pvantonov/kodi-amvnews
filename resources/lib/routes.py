@@ -61,10 +61,6 @@ def create_featured_amv_list(page):
                 'label': u'{} ({})'.format(amv['title'], amv['date']),
                 'icon': amv['image'],
                 'thumbnail': amv['image'],
-                'context_menu': [
-                    ('Toggle watched', 'Action(ToggleWatched)'),
-                    ('AMV Info', 'Action(Info)')
-                ],
                 'path': PLUGIN.url_for('play_amv', amv_id=amv['id']),
                 'is_playable': True,
                 'info': {
@@ -108,7 +104,7 @@ def create_featured_amv_list(page):
             )
         }
     ])
-    PLUGIN.set_content('musicvideos')
+    PLUGIN.set_content('videos')
     return PLUGIN.finish(items, update_listing=not created_from_main_listing)
 
 
