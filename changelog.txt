@@ -1,3 +1,9 @@
+## [1.2.0] - 2017-03-02
+### Added
+- Kodi 17 support
+### Fixed
+- '..' list item works properly
+
 ## [1.1.2] - 2017-01-08
 ### Fixed
 - Description
@@ -12,8 +18,9 @@
 - Stream info
 - AMV info
 - Subtitles support
+
 ### Fixed
-- Marking as watched works properly
+- Marking AMV as watched works properly
 
 ## [1.0.0] - 2017-01-07
 ### Added

@@ -19,7 +19,7 @@ def create_main_listing():
             'icon': None,
             'thumbnail': None,
             'context_menu': [],
-            'path': PLUGIN.url_for('create_featured_amv_list', page=1)
+            'path': PLUGIN.url_for('create_featured_amv_list', page=0)
         }
     ]
     PLUGIN.set_content('musicvideos')
@@ -39,6 +39,10 @@ def create_featured_amv_list(page):
     :rtype: list[dict]
     """
     page = int(page)
+    created_from_main_listing = (page == 0)
+    if page == 0:
+        page = 1
+
     items = []
     if page > 1:
         items.append({
@@ -57,10 +61,6 @@ def create_featured_amv_list(page):
                 'label': u'{} ({})'.format(amv['title'], amv['date']),
                 'icon': amv['image'],
                 'thumbnail': amv['image'],
-                'context_menu': [
-                    ('Toggle watched', 'Action(ToggleWatched)'),
-                    ('AMV Info', 'Action(Info)')
-                ],
                 'path': PLUGIN.url_for('play_amv', amv_id=amv['id']),
                 'is_playable': True,
                 'info': {
@@ -104,8 +104,8 @@ def create_featured_amv_list(page):
             )
         }
     ])
-    PLUGIN.set_content('musicvideos')
-    return items
+    PLUGIN.set_content('videos')
+    return PLUGIN.finish(items, update_listing=not created_from_main_listing)
 
 
 @PLUGIN.route('/play/<amv_id>')
