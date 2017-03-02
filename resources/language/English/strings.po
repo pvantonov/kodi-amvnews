@@ -23,3 +23,15 @@ msgstr ""
 msgctxt "#10003"
 msgid "Next Page"
 msgstr ""
+
+msgctxt "#10101"
+msgid "Authentication"
+msgstr ""
+
+msgctxt "#10102"
+msgid "Login"
+msgstr ""
+
+msgctxt "#10103"
+msgid "Password"
+msgstr ""

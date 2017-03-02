@@ -1,6 +1,7 @@
 ## [1.2.0] - 2017-03-02
 ### Added
 - Kodi 17 support
+
 ### Fixed
 - '..' list item works properly
 

@@ -2,7 +2,7 @@
 """
 Routing rules.
 """
-from amvnews import get_featured_amv_list
+from amvnews import AmvNewsBrowser
 from constants import PLUGIN
 
 
@@ -55,7 +55,7 @@ def create_featured_amv_list(page):
                 page=page - 1
             )
         })
-    for amv in get_featured_amv_list(page):
+    for amv in AmvNewsBrowser().get_featured_amv_list(page):
         items.extend([
             {
                 'label': u'{} ({})'.format(amv['title'], amv['date']),
@@ -73,7 +73,7 @@ def create_featured_amv_list(page):
                     'votes': amv['votes'],
                     'genre': amv['genre'],
                     'rating': amv['rating'] * 2,
-                    'userrating': 0,
+                    'userrating': amv['user_rating'] * 2,
                     'title': amv['title'],
                     'duration': amv['duration'],
                     'mediatype': 'musicvideo'
