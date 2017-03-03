@@ -23,3 +23,63 @@ msgstr ""
 msgctxt "#10003"
 msgid "Next Page"
 msgstr ""
+
+msgctxt "#10004"
+msgid "Evaluate"
+msgstr ""
+
+msgctxt "#10005"
+msgid "Add to favourites on AmvNews"
+msgstr ""
+
+msgctxt "#10006"
+msgid "Evaluated Amv"
+msgstr ""
+
+msgctxt "#10007"
+msgid "You must specify your login and password for AmvNews"
+msgstr ""
+
+msgctxt "#10008"
+msgid "Favourite Amv"
+msgstr ""
+
+msgctxt "#10009"
+msgid "Remove from favourites on AmvNews"
+msgstr ""
+
+msgctxt "#10101"
+msgid "Authentication"
+msgstr ""
+
+msgctxt "#10102"
+msgid "Login"
+msgstr ""
+
+msgctxt "#10103"
+msgid "Password"
+msgstr ""
+
+msgctxt "#10201"
+msgid "Evaluate AMV"
+msgstr ""
+
+msgctxt "#10202"
+msgid "Disgustingly"
+msgstr ""
+
+msgctxt "#10203"
+msgid "Bad"
+msgstr ""
+
+msgctxt "#10204"
+msgid "Satisfactory"
+msgstr ""
+
+msgctxt "#10205"
+msgid "Good"
+msgstr ""
+
+msgctxt "#10206"
+msgid "Excellent"
+msgstr ""
