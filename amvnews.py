@@ -10,7 +10,8 @@ from bs4 import BeautifulSoup
 from constants import PLUGIN
 
 
-__all__ = ['get_featured_amv_list', 'get_amv', 'set_amv_mark', 'add_amv_to_favourites', 'get_evaluated_amv_list']
+__all__ = ['get_featured_amv_list', 'get_amv', 'set_amv_mark', 'add_amv_to_favourites', 'get_evaluated_amv_list',
+           'get_favourite_amv_list', 'remove_amv_from_favourites']
 
 
 class AmvNewsBrowser(object):
@@ -70,6 +71,16 @@ class AmvNewsBrowser(object):
         """
         return self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'votes'})
 
+    def get_favourite_amv_list_html(self, page):
+        """
+        Get HTML page with list of favourite AMV.
+
+        :param int page: Page number.
+        :return: Parsed HTML page with list of favourite AMV.
+        :rtype: BeautifulSoup
+        """
+        return self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'favor'})
+
     def get_amv_html(self, amv_id):
         """
         Get HTML page with AMV info.
@@ -96,6 +107,14 @@ class AmvNewsBrowser(object):
         :param int amv_id: Identifier of AMV.
         """
         self.session.get(self.homepage, params={'go': 'Files', 'in': 'addfav', 'id': amv_id})
+
+    def remove_amv_from_favourites(self, amv_id):
+        """
+        Remove AMV from favourites.
+
+        :param int amv_id: Identifier of AMV.
+        """
+        self.session.get(self.homepage, params={'go': 'Files', 'in': 'delfav', 'id': amv_id})
 
     def _get_full_url(self, url_params):
         """
@@ -164,6 +183,25 @@ def get_evaluated_amv_list(page):
     return result
 
 
+def get_favourite_amv_list(page):
+    """
+    Get information about favourite AMV.
+
+    To avoid heavy queries featured AMV are obtained by small portions
+    (pages). Data for each page is obtained independently by demand.
+
+    :param int page: Page number.
+    :return: List of favourite AMV metadata.
+    :rtype: dict
+    """
+    html = browser.get_favourite_amv_list_html(page)
+
+    result = []
+    for node in html.find_all('a', attrs={'class': 'ratestop'})[:10]:
+        result.append(get_amv(int(REGEX_AMV_ID.match(node.attrs['href']).groupdict()['id'])))
+    return result
+
+
 def get_amv(amv_id):
     """
     Get information about specified AMV.
@@ -187,10 +225,12 @@ def get_amv(amv_id):
         'votes': int(html.find(itemprop='ratingCount').text.strip()),
         'author': html.find('span', itemprop='name').text.strip(),
         'genre': ', '.join(node.attrs['content'] for node in html.find_all(itemprop='genre')),
-        'image': 'http://amvnews.ru{}'.format(html.find(itemprop='image').attrs['src']),
         'timestamp': datetime.datetime.now(),
         'format': 2,
     }
+
+    image_tag = html.find(itemprop='image')
+    metadata['image'] = 'http://amvnews.ru{}'.format(image_tag.attrs['src']) if image_tag else None
 
     user_rating_tag = html.find(id='vote-text')
     user_rating = user_rating_tag.text.strip() if user_rating_tag else '-'
@@ -282,6 +322,15 @@ def add_amv_to_favourites(amv_id):
     :param int amv_id: Identifier of AMV.
     """
     browser.add_amv_to_favourites(amv_id)
+
+
+def remove_amv_from_favourites(amv_id):
+    """
+    Remove AMV from favourites.
+
+    :param int amv_id: Identifier of AMV.
+    """
+    browser.remove_amv_from_favourites(amv_id)
 
 
 REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)  # noqa

@@ -37,7 +37,15 @@ msgid "Evaluated Amv"
 msgstr ""
 
 msgctxt "#10007"
-msgid "You must specify your login and password for AmvNews."
+msgid "You must specify your login and password for AmvNews"
+msgstr ""
+
+msgctxt "#10008"
+msgid "Favourite Amv"
+msgstr ""
+
+msgctxt "#10009"
+msgid "Remove from favourites on AmvNews"
 msgstr ""
 
 msgctxt "#10101"

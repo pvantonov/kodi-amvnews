@@ -3,7 +3,7 @@
 Routing rules.
 """
 import xbmcgui
-from amvnews import get_featured_amv_list, set_amv_mark, add_amv_to_favourites, get_evaluated_amv_list
+from amvnews import *
 from constants import PLUGIN
 
 
@@ -28,6 +28,13 @@ def create_main_listing():
             'thumbnail': None,
             'context_menu': [],
             'path': PLUGIN.url_for('create_evaluated_amv_list', page=0)
+        },
+        {
+            'label': PLUGIN.get_string(10008),
+            'icon': None,
+            'thumbnail': None,
+            'context_menu': [],
+            'path': PLUGIN.url_for('create_favourite_amv_list', page=0)
         }
     ]
     PLUGIN.set_content('videos')
@@ -103,6 +110,40 @@ def create_evaluated_amv_list(page):
         return PLUGIN.finish(items, update_listing=not created_from_main_listing)
 
 
+@PLUGIN.route('/favourite/<page>')
+def create_favourite_amv_list(page):
+    """
+    Create list of favourite AMV for specified page.
+
+    To avoid heavy queries featured AMV are demonstrated by small portions
+    (pages). Each page is constucted independently by demand.
+
+    :param int page: Page number.
+    :return: List of favourite AMV.
+    :rtype: list[dict]
+    """
+    if not PLUGIN.get_setting('username') or not PLUGIN.get_setting('password'):
+        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10007))
+    else:
+        page = int(page)
+        created_from_main_listing = (page == 0)
+        if page == 0:
+            page = 1
+
+        items = []
+        if page > 1:
+            items.append(_create_prev_page_item('create_favourite_amv_list', page))
+        for amv in get_favourite_amv_list(page):
+            context_menu = [
+                (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
+                (PLUGIN.get_string(10009), 'RunPlugin(%s)' % PLUGIN.url_for('remove_from_favourites', amv_id=amv['id']))
+            ]
+            items.append(_create_amv_item(amv, context_menu))
+        items.append(_create_next_page_item('create_favourite_amv_list', page))
+        PLUGIN.set_content('videos')
+        return PLUGIN.finish(items, update_listing=not created_from_main_listing)
+
+
 @PLUGIN.route('/evaluate/<amv_id>')
 def evaluate(amv_id):
     """
@@ -114,7 +155,7 @@ def evaluate(amv_id):
     set_amv_mark(int(amv_id), chosen_mark)
 
 
-@PLUGIN.route('/favorite/add/<amv_id>')
+@PLUGIN.route('/favourite/add/<amv_id>')
 def add_to_favourites(amv_id):
     """
     Make AMV favorite.
@@ -122,6 +163,16 @@ def add_to_favourites(amv_id):
     :param int amv_id: AMV identifier.
     """
     add_amv_to_favourites(int(amv_id))
+
+
+@PLUGIN.route('/favourite/remove/<amv_id>')
+def remove_from_favourites(amv_id):
+    """
+    Remove AMV from favorite.
+
+    :param int amv_id: AMV identifier.
+    """
+    remove_amv_from_favourites(int(amv_id))
 
 
 @PLUGIN.route('/play/<amv_id>')
