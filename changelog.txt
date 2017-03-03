@@ -1,3 +1,8 @@
+## [2.0.0] - 2017-03-03
+### Added
+- Authentication
+- Evaluation
+
 ## [1.2.0] - 2017-03-02
 ### Added
 - Kodi 17 support

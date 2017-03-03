@@ -2,7 +2,8 @@
 """
 Routing rules.
 """
-from amvnews import AmvNewsBrowser
+import xbmcgui
+from amvnews import get_featured_amv_list, set_amv_mark
 from constants import PLUGIN
 
 
@@ -55,7 +56,13 @@ def create_featured_amv_list(page):
                 page=page - 1
             )
         })
-    for amv in AmvNewsBrowser().get_featured_amv_list(page):
+    for amv in get_featured_amv_list(page):
+        context_menu = []
+        if PLUGIN.get_setting('username') and PLUGIN.get_setting('password'):
+            context_menu.extend([
+                (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id']))
+            ])
+
         items.extend([
             {
                 'label': u'{} ({})'.format(amv['title'], amv['date']),
@@ -63,6 +70,7 @@ def create_featured_amv_list(page):
                 'thumbnail': amv['image'],
                 'path': PLUGIN.url_for('play_amv', amv_id=amv['id']),
                 'is_playable': True,
+                'context_menu': context_menu,
                 'info': {
                     'count': amv['id'],
                     'size': amv['size'],
@@ -106,6 +114,17 @@ def create_featured_amv_list(page):
     ])
     PLUGIN.set_content('videos')
     return PLUGIN.finish(items, update_listing=not created_from_main_listing)
+
+
+@PLUGIN.route('/evaluate/dialog/<amv_id>')
+def evaluate(amv_id):
+    """
+    Evaluate AMV.
+
+    :param int amv_id: AMV identifier.
+    """
+    chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, xrange(10202, 10207))) + 1
+    set_amv_mark(amv_id, chosen_mark)
 
 
 @PLUGIN.route('/play/<amv_id>')
