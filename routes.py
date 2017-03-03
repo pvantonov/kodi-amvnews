@@ -3,7 +3,7 @@
 Routing rules.
 """
 import xbmcgui
-from amvnews import get_featured_amv_list, set_amv_mark
+from amvnews import get_featured_amv_list, set_amv_mark, add_amv_to_favourites
 from constants import PLUGIN
 
 
@@ -60,7 +60,8 @@ def create_featured_amv_list(page):
         context_menu = []
         if PLUGIN.get_setting('username') and PLUGIN.get_setting('password'):
             context_menu.extend([
-                (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id']))
+                (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
+                (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
             ])
 
         items.extend([
@@ -125,6 +126,16 @@ def evaluate(amv_id):
     """
     chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, xrange(10202, 10207))) + 1
     set_amv_mark(int(amv_id), chosen_mark)
+
+
+@PLUGIN.route('/favorite/add/<amv_id>')
+def add_to_favourites(amv_id):
+    """
+    Make AMV favorite.
+
+    :param int amv_id: AMV identifier.
+    """
+    add_amv_to_favourites(int(amv_id))
 
 
 @PLUGIN.route('/play/<amv_id>')

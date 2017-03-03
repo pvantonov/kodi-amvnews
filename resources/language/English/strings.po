@@ -28,6 +28,10 @@ msgctxt "#10004"
 msgid "Evaluate"
 msgstr ""
 
+msgctxt "#10005"
+msgid "Add to favourites on AmvNews"
+msgstr ""
+
 msgctxt "#10101"
 msgid "Authentication"
 msgstr ""

@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from constants import PLUGIN
 
 
-__all__ = ['get_featured_amv_list', 'get_amv', 'set_amv_mark']
+__all__ = ['get_featured_amv_list', 'get_amv', 'set_amv_mark', 'add_amv_to_favourites']
 
 
 class AmvNewsBrowser(object):
@@ -78,6 +78,14 @@ class AmvNewsBrowser(object):
         :param int mark: Mark
         """
         self.session.get(self.homepage, params={'go': 'Files', 'in': 'ajaxreiting', 'id': amv_id, 'vote': mark})
+
+    def add_amv_to_favourites(self, amv_id):
+        """
+        Make AMV favorite.
+
+        :param int amv_id: Identifier of AMV.
+        """
+        self.session.get(self.homepage, params={'go': 'Files', 'in': 'addfav', 'id': amv_id})
 
     def _get_full_url(self, url_params):
         """
@@ -236,6 +244,15 @@ def set_amv_mark(amv_id, mark):
     browser.post_amv_mark(amv_id, mark)
     storage = PLUGIN.get_storage('amv_metadata')
     storage[amv_id]['user_rating'] = mark
+
+
+def add_amv_to_favourites(amv_id):
+    """
+    Make AMV favorite.
+
+    :param int amv_id: Identifier of AMV.
+    """
+    browser.add_amv_to_favourites(amv_id)
 
 
 REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)  # noqa
