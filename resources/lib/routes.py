@@ -124,7 +124,7 @@ def evaluate(amv_id):
     :param int amv_id: AMV identifier.
     """
     chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, xrange(10202, 10207))) + 1
-    set_amv_mark(amv_id, chosen_mark)
+    set_amv_mark(int(amv_id), chosen_mark)
 
 
 @PLUGIN.route('/play/<amv_id>')

@@ -2,6 +2,7 @@
 """
 Unofficial API to http://amvnews.ru.
 """
+import datetime
 import urllib
 import re
 import requests
@@ -102,7 +103,6 @@ class AmvNewsBrowser(object):
 browser = AmvNewsBrowser()
 
 
-@PLUGIN.cached(TTL=5)
 def get_featured_amv_list(page):
     """
     Get information about featured AMV.
@@ -135,8 +135,9 @@ def get_amv(amv_id):
     :rtype: dict
     """
     storage = PLUGIN.get_storage('amv_metadata')
-    if amv_id in storage:
-        return storage[amv_id]
+    if amv_id in storage and storage[amv_id].get('format', 0) == 2:
+        if (datetime.datetime.now() - storage[amv_id]['timestamp']).days < 3:
+            return storage[amv_id]
 
     html = browser.get_amv_html(amv_id)
 
@@ -149,7 +150,9 @@ def get_amv(amv_id):
         'votes': int(html.find(itemprop='ratingCount').text.strip()),
         'author': html.find('span', itemprop='name').text.strip(),
         'genre': ', '.join(node.attrs['content'] for node in html.find_all(itemprop='genre')),
-        'image': 'http://amvnews.ru{}'.format(html.find(itemprop='image').attrs['src'])
+        'image': 'http://amvnews.ru{}'.format(html.find(itemprop='image').attrs['src']),
+        'timestamp': datetime.datetime.now(),
+        'format': 2,
     }
 
     user_rating_tag = html.find(id='vote-text')
@@ -231,6 +234,8 @@ def set_amv_mark(amv_id, mark):
     :param int mark: Mark
     """
     browser.post_amv_mark(amv_id, mark)
+    storage = PLUGIN.get_storage('amv_metadata')
+    storage[amv_id]['user_rating'] = mark
 
 
 REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)  # noqa
