@@ -32,6 +32,14 @@ msgctxt "#10005"
 msgid "Add to favourites on AmvNews"
 msgstr ""
 
+msgctxt "#10006"
+msgid "Evaluated Amv"
+msgstr ""
+
+msgctxt "#10007"
+msgid "You must specify your login and password for AmvNews."
+msgstr ""
+
 msgctxt "#10101"
 msgid "Authentication"
 msgstr ""

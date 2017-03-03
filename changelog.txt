@@ -2,6 +2,8 @@
 ### Added
 - Authentication
 - Evaluation
+- Add to favourites
+- Ability to watch evaluated AMV
 
 ## [1.2.0] - 2017-03-02
 ### Added

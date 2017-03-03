@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from constants import PLUGIN
 
 
-__all__ = ['get_featured_amv_list', 'get_amv', 'set_amv_mark', 'add_amv_to_favourites']
+__all__ = ['get_featured_amv_list', 'get_amv', 'set_amv_mark', 'add_amv_to_favourites', 'get_evaluated_amv_list']
 
 
 class AmvNewsBrowser(object):
@@ -59,6 +59,16 @@ class AmvNewsBrowser(object):
         :rtype: BeautifulSoup
         """
         return self._get_html_page({'go': 'News', 'page': (page - 1) * 10, 'in': 'cat', 'id': 1})
+
+    def get_evaluated_amv_list_html(self, page):
+        """
+        Get HTML page with list of evaluated AMV.
+
+        :param int page: Page number.
+        :return: Parsed HTML page with list of featured AMV.
+        :rtype: BeautifulSoup
+        """
+        return self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'votes'})
 
     def get_amv_html(self, amv_id):
         """
@@ -132,6 +142,25 @@ def get_featured_amv_list(page):
         metadata = get_amv(int(REGEX_AMV_ID.match(amv_link).groupdict()['id']))
         metadata.update({'date': node.find_parent('td').find_next_sibling('td').text.strip()})
         result.append(metadata)
+    return result
+
+
+def get_evaluated_amv_list(page):
+    """
+    Get information about evaluated AMV.
+
+    To avoid heavy queries featured AMV are obtained by small portions
+    (pages). Data for each page is obtained independently by demand.
+
+    :param int page: Page number.
+    :return: List of evaluated AMV metadata.
+    :rtype: dict
+    """
+    html = browser.get_evaluated_amv_list_html(page)
+
+    result = []
+    for node in html.find_all('a', attrs={'class': 'ratestop'})[:10]:
+        result.append(get_amv(int(REGEX_AMV_ID.match(node.attrs['href']).groupdict()['id'])))
     return result
 
 

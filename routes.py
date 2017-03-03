@@ -3,7 +3,7 @@
 Routing rules.
 """
 import xbmcgui
-from amvnews import get_featured_amv_list, set_amv_mark, add_amv_to_favourites
+from amvnews import get_featured_amv_list, set_amv_mark, add_amv_to_favourites, get_evaluated_amv_list
 from constants import PLUGIN
 
 
@@ -21,9 +21,16 @@ def create_main_listing():
             'thumbnail': None,
             'context_menu': [],
             'path': PLUGIN.url_for('create_featured_amv_list', page=0)
+        },
+        {
+            'label': PLUGIN.get_string(10006),
+            'icon': None,
+            'thumbnail': None,
+            'context_menu': [],
+            'path': PLUGIN.url_for('create_evaluated_amv_list', page=0)
         }
     ]
-    PLUGIN.set_content('musicvideos')
+    PLUGIN.set_content('videos')
     return items
 
 
@@ -46,16 +53,7 @@ def create_featured_amv_list(page):
 
     items = []
     if page > 1:
-        items.append({
-            'label': PLUGIN.get_string(10002),
-            'icon': None,
-            'thumbnail': None,
-            'context_menu': [],
-            'path': PLUGIN.url_for(
-                endpoint='create_featured_amv_list',
-                page=page - 1
-            )
-        })
+        items.append(_create_prev_page_item('create_featured_amv_list', page))
     for amv in get_featured_amv_list(page):
         context_menu = []
         if PLUGIN.get_setting('username') and PLUGIN.get_setting('password'):
@@ -63,61 +61,49 @@ def create_featured_amv_list(page):
                 (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
                 (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
             ])
-
-        items.extend([
-            {
-                'label': u'{} ({})'.format(amv['title'], amv['date']),
-                'icon': amv['image'],
-                'thumbnail': amv['image'],
-                'path': PLUGIN.url_for('play_amv', amv_id=amv['id']),
-                'is_playable': True,
-                'context_menu': context_menu,
-                'info': {
-                    'count': amv['id'],
-                    'size': amv['size'],
-                    'director': amv['author'],
-                    'plot': amv['description'],
-                    'aired': amv['aired'],
-                    'dateadded': amv['added'],
-                    'votes': amv['votes'],
-                    'genre': amv['genre'],
-                    'rating': amv['rating'] * 2,
-                    'userrating': amv['user_rating'] * 2,
-                    'title': amv['title'],
-                    'duration': amv['duration'],
-                    'mediatype': 'musicvideo'
-                },
-                'stream_info': {
-                    'video': {
-                        'codec': amv['video_codec'],
-                        'aspect': amv['video_aspect'],
-                        'width': amv['video_width'],
-                        'height': amv['video_height'],
-                        'duration': amv['duration']
-                    },
-                    'audio': {
-                        'codec': amv['audio_codec']
-                    }
-                }
-            }
-        ])
-    items.extend([
-        {
-            'label': PLUGIN.get_string(10003),
-            'icon': None,
-            'thumbnail': None,
-            'context_menu': [],
-            'path': PLUGIN.url_for(
-                endpoint='create_featured_amv_list',
-                page=page + 1
-            )
-        }
-    ])
+        item = _create_amv_item(amv, context_menu)
+        item['label'] = u'{} ({})'.format(amv['title'], amv['date'])
+        items.append(item)
+    items.append(_create_next_page_item('create_featured_amv_list', page))
     PLUGIN.set_content('videos')
     return PLUGIN.finish(items, update_listing=not created_from_main_listing)
 
 
-@PLUGIN.route('/evaluate/dialog/<amv_id>')
+@PLUGIN.route('/evaluated/<page>')
+def create_evaluated_amv_list(page):
+    """
+    Create list of evaluated AMV for specified page.
+
+    To avoid heavy queries featured AMV are demonstrated by small portions
+    (pages). Each page is constucted independently by demand.
+
+    :param int page: Page number.
+    :return: List of evaluated AMV.
+    :rtype: list[dict]
+    """
+    if not PLUGIN.get_setting('username') or not PLUGIN.get_setting('password'):
+        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10007))
+    else:
+        page = int(page)
+        created_from_main_listing = (page == 0)
+        if page == 0:
+            page = 1
+
+        items = []
+        if page > 1:
+            items.append(_create_prev_page_item('create_evaluated_amv_list', page))
+        for amv in get_evaluated_amv_list(page):
+            context_menu = [
+                (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
+                (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
+            ]
+            items.append(_create_amv_item(amv, context_menu))
+        items.append(_create_next_page_item('create_evaluated_amv_list', page))
+        PLUGIN.set_content('videos')
+        return PLUGIN.finish(items, update_listing=not created_from_main_listing)
+
+
+@PLUGIN.route('/evaluate/<amv_id>')
 def evaluate(amv_id):
     """
     Evaluate AMV.
@@ -147,3 +133,85 @@ def play_amv(amv_id):
     """
     metadata = PLUGIN.get_storage('amv_metadata')[int(amv_id)]
     PLUGIN.set_resolved_url(metadata['path'], metadata.get('subtitles', None))
+
+
+def _create_next_page_item(view_name, current_page):
+    """
+    Create list item to show next page of view.
+
+    :param str view_name: Name of view.
+    :param int current_page: Current page number.
+    :return: List item to show next page.
+    :rtype: dict
+    """
+    return {
+        'label': PLUGIN.get_string(10003),
+        'icon': None,
+        'thumbnail': None,
+        'context_menu': [],
+        'path': PLUGIN.url_for(endpoint=view_name, page=current_page + 1)
+    }
+
+
+def _create_prev_page_item(view_name, current_page):
+    """
+    Create list item to show previous page of view.
+
+    :param str view_name: Name of view.
+    :param int current_page: Current page number.
+    :return: List item to show previous page.
+    :rtype: dict
+    """
+    return {
+        'label': PLUGIN.get_string(10002),
+        'icon': None,
+        'thumbnail': None,
+        'context_menu': [],
+        'path': PLUGIN.url_for(endpoint=view_name, page=current_page - 1)
+    }
+
+
+def _create_amv_item(amv_info, context_menu):
+    """
+    Create list item for AMV.
+
+    :param dict amv_info: AMV information.
+    :param list context_menu: Context menu for item.
+    :return: List item for AMV.
+    :rtype: dict
+    """
+    return {
+        'label': amv_info['title'],
+        'icon': amv_info['image'],
+        'thumbnail': amv_info['image'],
+        'path': PLUGIN.url_for('play_amv', amv_id=amv_info['id']),
+        'is_playable': True,
+        'context_menu': context_menu,
+        'info': {
+            'count': amv_info['id'],
+            'size': amv_info['size'],
+            'director': amv_info['author'],
+            'plot': amv_info['description'],
+            'aired': amv_info['aired'],
+            'dateadded': amv_info['added'],
+            'votes': amv_info['votes'],
+            'genre': amv_info['genre'],
+            'rating': amv_info['rating'] * 2,
+            'userrating': amv_info['user_rating'] * 2,
+            'title': amv_info['title'],
+            'duration': amv_info['duration'],
+            'mediatype': 'musicvideo'
+        },
+        'stream_info': {
+            'video': {
+                'codec': amv_info['video_codec'],
+                'aspect': amv_info['video_aspect'],
+                'width': amv_info['video_width'],
+                'height': amv_info['video_height'],
+                'duration': amv_info['duration']
+            },
+            'audio': {
+                'codec': amv_info['audio_codec']
+            }
+        }
+    }
