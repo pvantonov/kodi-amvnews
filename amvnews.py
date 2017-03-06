@@ -121,7 +121,7 @@ class AmvNewsBrowser(object):
         :rtype: dict
         """
         storage = PLUGIN.get_storage('amv_metadata')
-        if amv_id in storage and storage[amv_id].get('format', 0) == 3:
+        if amv_id in storage and storage[amv_id].get('format', 0) == 4:
             if (datetime.datetime.now() - storage[amv_id]['timestamp']).days < 3:
                 return storage[amv_id]
 
@@ -130,7 +130,7 @@ class AmvNewsBrowser(object):
         metadata = {
             'id': amv_id,
             'timestamp': datetime.datetime.now(),
-            'format': 3,
+            'format': 4,
             'amv': {
                 'title': html.find('h1', itemprop='name').text.strip(),
                 'description': html.find(itemprop='description').text.strip(),
@@ -151,9 +151,8 @@ class AmvNewsBrowser(object):
 
         metadata['video'] = self._get_video_metadata(html)
         metadata['subtitles'] = self._get_subtitles_metadata(html)
-
-        image_tag = html.find(itemprop='image')
-        metadata['image'] = 'http://amvnews.ru{}'.format(image_tag.attrs['src']) if image_tag else None
+        metadata['images'] = self._get_images(html)
+        metadata['image'] = metadata['images'][0] if metadata['images'] else None
 
         storage[amv_id] = metadata
         return metadata
@@ -234,6 +233,26 @@ class AmvNewsBrowser(object):
             added = '{}-{}-{} {}:{}:00'.format(year, month, day, hour, minute)
 
         return aired, added
+
+    @staticmethod
+    def _get_images(html):
+        """
+        Get AMV related images/screenshots.
+
+        :param BeautifulSoup html: Parsed HTML page.
+        :return: List of image's URL
+        :rtype: list[str]
+        """
+        images = []
+        main_image_tag = html.find(itemprop='image')
+        if main_image_tag:
+            images.append('http://amvnews.ru{}'.format(main_image_tag.attrs['src']))
+
+        title = html.find('h1', itemprop='name').text.strip()
+        for image_tag in html.find_all('img', alt=title):
+            images.append('http://amvnews.ru{}'.format(image_tag.attrs['src']))
+
+        return images
 
     @staticmethod
     def _get_video_metadata(html):
