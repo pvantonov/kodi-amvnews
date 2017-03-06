@@ -60,6 +60,22 @@ msgctxt "#10103"
 msgid "Password"
 msgstr ""
 
+msgctxt "#10104"
+msgid "Subtitles"
+msgstr ""
+
+msgctxt "#10105"
+msgid "Preferable language"
+msgstr ""
+
+msgctxt "#10106"
+msgid "Russian"
+msgstr ""
+
+msgctxt "#10107"
+msgid "English"
+msgstr ""
+
 msgctxt "#10201"
 msgid "Evaluate AMV"
 msgstr ""
