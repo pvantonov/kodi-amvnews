@@ -3,8 +3,9 @@
 Routing rules.
 """
 import xbmcgui
-from amvnews import *
+from amvnews import AmvNewsBrowser
 from constants import PLUGIN
+from helpers import Language
 
 
 @PLUGIN.route('/')
@@ -61,7 +62,7 @@ def create_featured_amv_list(page):
     items = []
     if page > 1:
         items.append(_create_prev_page_item('create_featured_amv_list', page))
-    for amv in get_featured_amv_list(page):
+    for amv in AmvNewsBrowser().get_featured_amv_list(page):
         context_menu = []
         if PLUGIN.get_setting('username') and PLUGIN.get_setting('password'):
             context_menu.extend([
@@ -69,7 +70,7 @@ def create_featured_amv_list(page):
                 (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
             ])
         item = _create_amv_item(amv, context_menu)
-        item['label'] = u'{} ({})'.format(amv['title'], amv['date'])
+        item['label'] = u'{} ({})'.format(amv['amv']['title'], amv['amv']['date'])
         items.append(item)
     items.append(_create_next_page_item('create_featured_amv_list', page))
     PLUGIN.set_content('videos')
@@ -99,7 +100,7 @@ def create_evaluated_amv_list(page):
         items = []
         if page > 1:
             items.append(_create_prev_page_item('create_evaluated_amv_list', page))
-        for amv in get_evaluated_amv_list(page):
+        for amv in AmvNewsBrowser().get_evaluated_amv_list(page):
             context_menu = [
                 (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
                 (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
@@ -133,7 +134,7 @@ def create_favourite_amv_list(page):
         items = []
         if page > 1:
             items.append(_create_prev_page_item('create_favourite_amv_list', page))
-        for amv in get_favourite_amv_list(page):
+        for amv in AmvNewsBrowser().get_favourite_amv_list(page):
             context_menu = [
                 (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
                 (PLUGIN.get_string(10009), 'RunPlugin(%s)' % PLUGIN.url_for('remove_from_favourites', amv_id=amv['id']))
@@ -152,7 +153,7 @@ def evaluate(amv_id):
     :param int amv_id: AMV identifier.
     """
     chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, xrange(10202, 10207))) + 1
-    set_amv_mark(int(amv_id), chosen_mark)
+    AmvNewsBrowser().set_amv_mark(int(amv_id), chosen_mark)
 
 
 @PLUGIN.route('/favourite/add/<amv_id>')
@@ -162,7 +163,7 @@ def add_to_favourites(amv_id):
 
     :param int amv_id: AMV identifier.
     """
-    add_amv_to_favourites(int(amv_id))
+    AmvNewsBrowser().add_amv_to_favourites(int(amv_id))
 
 
 @PLUGIN.route('/favourite/remove/<amv_id>')
@@ -172,18 +173,21 @@ def remove_from_favourites(amv_id):
 
     :param int amv_id: AMV identifier.
     """
-    remove_amv_from_favourites(int(amv_id))
+    AmvNewsBrowser().remove_amv_from_favourites(int(amv_id))
 
 
+@PLUGIN.route('/play/<amv_id>/<subtitles_id>', name='play_with_subtitles')
 @PLUGIN.route('/play/<amv_id>')
-def play_amv(amv_id):
+def play(amv_id, subtitles_id=None):
     """
     Play AMV.
 
     :param int amv_id: AMV identifier.
+    :param int|None subtitles_id: Subtitles identifier.
     """
-    metadata = PLUGIN.get_storage('amv_metadata')[int(amv_id)]
-    PLUGIN.set_resolved_url(metadata['path'], metadata.get('subtitles', None))
+    video_path = AmvNewsBrowser.get_amv_url(amv_id)
+    subtitles_path = AmvNewsBrowser.get_subtitles_url(subtitles_id) if subtitles_id else None
+    PLUGIN.set_resolved_url(video_path, subtitles_path)
 
 
 def _create_next_page_item(view_name, current_page):
@@ -231,38 +235,52 @@ def _create_amv_item(amv_info, context_menu):
     :return: List item for AMV.
     :rtype: dict
     """
+    amv_id = amv_info['id']
+    if amv_info['subtitles']:
+        if PLUGIN.get_setting('subtitles_lang') == '0':
+            subtitles_lang = Language.Russian
+        elif PLUGIN.get_setting('subtitles_lang') == '1':
+            subtitles_lang = Language.English
+        preferable_subtitles = filter(lambda x: x[0] == subtitles_lang, amv_info['subtitles'])
+        if preferable_subtitles:
+            path = PLUGIN.url_for('play_with_subtitles', amv_id=amv_id, subtitles_id=preferable_subtitles[0][1])
+        else:
+            path = PLUGIN.url_for('play_with_subtitles', amv_id=amv_id, subtitles_id=amv_info['subtitles'][0][1])
+    else:
+        path = PLUGIN.url_for('play', amv_id=amv_id)
+
     return {
-        'label': amv_info['title'],
+        'label': amv_info['amv']['title'],
         'icon': amv_info['image'],
         'thumbnail': amv_info['image'],
-        'path': PLUGIN.url_for('play_amv', amv_id=amv_info['id']),
+        'path': path,
         'is_playable': True,
         'context_menu': context_menu,
         'info': {
-            'count': amv_info['id'],
-            'size': amv_info['size'],
-            'director': amv_info['author'],
-            'plot': amv_info['description'],
-            'aired': amv_info['aired'],
-            'dateadded': amv_info['added'],
-            'votes': amv_info['votes'],
-            'genre': amv_info['genre'],
-            'rating': amv_info['rating'] * 2,
-            'userrating': amv_info['user_rating'] * 2,
-            'title': amv_info['title'],
-            'duration': amv_info['duration'],
+            'count': amv_id,
+            'size': amv_info['video']['size'],
+            'director': amv_info['amv']['author'],
+            'plot': amv_info['amv']['description'],
+            'aired': amv_info['amv']['aired'],
+            'dateadded': amv_info['amv']['added'],
+            'votes': amv_info['amv']['votes'],
+            'genre': amv_info['amv']['genre'],
+            'rating': amv_info['amv']['rating'] * 2,
+            'userrating': amv_info['amv']['user_rating'] * 2,
+            'title': amv_info['amv']['title'],
+            'duration': amv_info['video']['duration'],
             'mediatype': 'musicvideo'
         },
         'stream_info': {
             'video': {
-                'codec': amv_info['video_codec'],
-                'aspect': amv_info['video_aspect'],
-                'width': amv_info['video_width'],
-                'height': amv_info['video_height'],
-                'duration': amv_info['duration']
+                'codec': amv_info['video']['video_codec'],
+                'aspect': amv_info['video']['aspect'],
+                'width': amv_info['video']['width'],
+                'height': amv_info['video']['height'],
+                'duration': amv_info['video']['duration']
             },
             'audio': {
-                'codec': amv_info['audio_codec']
+                'codec': amv_info['video']['audio_codec']
             }
         }
     }

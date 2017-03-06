@@ -4,4 +4,7 @@
         <setting label="10102" type="text" id="username" default=""/>
         <setting label="10103" type="text" id="password" option="hidden" enable="!eq(-1,)" default=""/>
     </category>
+    <category label="10104">
+        <setting label="10105" type="enum" id="subtitles_lang" lvalues="10106|10107" default="0"/>
+    </category>
 </settings>
