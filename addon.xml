@@ -20,6 +20,15 @@
         <assets>
             <icon>resources/media/icon.png</icon>
             <fanart>resources/media/fanart.jpg</fanart>
+            <screenshot>resources/media/readme_01.png</screenshot>
+            <screenshot>resources/media/readme_02.png</screenshot>
+            <screenshot>resources/media/readme_03.png</screenshot>
+            <screenshot>resources/media/readme_04.png</screenshot>
+            <screenshot>resources/media/readme_05.png</screenshot>
+            <screenshot>resources/media/readme_06.png</screenshot>
+            <screenshot>resources/media/readme_07.png</screenshot>
+            <screenshot>resources/media/readme_08.png</screenshot>
+            <screenshot>resources/media/readme_09.png</screenshot>
         </assets>
     </extension>
 </addon>
