@@ -203,7 +203,7 @@ class AmvNewsBrowser(object):
         :return: Parsed HTML page.
         :rtype: BeautifulSoup
         """
-        return BeautifulSoup(self.session.get(self.homepage, params=url_params).text)
+        return BeautifulSoup(self.session.get(self.homepage, params=url_params).text.replace('&#...', '...'))
 
     @staticmethod
     def _get_amv_date(html):
@@ -326,6 +326,7 @@ class AmvNewsBrowser(object):
                     subtitles_lang = Language.Unknown
                 subtitles.append((subtitles_lang, subtitles_id))
         return subtitles
+
 
 REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)
 REGEX_AMV_SUB_ID = re.compile(u'^.*sub=(?P<id>\d+).*$', re.S)

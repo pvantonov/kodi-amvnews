@@ -4,7 +4,7 @@ Helpers.
 """
 from resources.lib.enum import Enum
 
-__all__ = ['Singleton']
+__all__ = ['Singleton', 'Language']
 
 
 class Language(Enum):

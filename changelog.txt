@@ -1,3 +1,7 @@
+## [2.1.1] - 2018-03-12
+### Fixed
+- Character combination '&#...' is parsed properly
+
 ## [2.1.0] - 2017-03-08
 ### Added
 - Ability to choose preferable subtitle language
