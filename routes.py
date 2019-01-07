@@ -2,6 +2,7 @@
 """
 Routing rules.
 """
+import xbmc
 import xbmcgui
 from amvnews import AmvNewsBrowser
 from constants import PLUGIN
@@ -67,7 +68,8 @@ def create_featured_amv_list(page):
         if PLUGIN.get_setting('username') and PLUGIN.get_setting('password'):
             context_menu.extend([
                 (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
-                (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
+                (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id'])),
+                (PLUGIN.get_string(10010), 'RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv['id'])),
             ])
         item = _create_amv_item(amv, context_menu)
         item['label'] = u'{} ({})'.format(amv['amv']['title'], amv['amv']['date'])
@@ -90,7 +92,7 @@ def create_evaluated_amv_list(page):
     :rtype: list[dict]
     """
     if not PLUGIN.get_setting('username') or not PLUGIN.get_setting('password'):
-        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10007))
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10007))
     else:
         page = int(page)
         created_from_main_listing = (page == 0)
@@ -103,7 +105,8 @@ def create_evaluated_amv_list(page):
         for amv in AmvNewsBrowser().get_evaluated_amv_list(page):
             context_menu = [
                 (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
-                (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id']))
+                (PLUGIN.get_string(10005), 'RunPlugin(%s)' % PLUGIN.url_for('add_to_favourites', amv_id=amv['id'])),
+                (PLUGIN.get_string(10010), 'RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv['id'])),
             ]
             items.append(_create_amv_item(amv, context_menu))
         items.append(_create_next_page_item('create_evaluated_amv_list', page))
@@ -124,7 +127,7 @@ def create_favourite_amv_list(page):
     :rtype: list[dict]
     """
     if not PLUGIN.get_setting('username') or not PLUGIN.get_setting('password'):
-        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10007))
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10007))
     else:
         page = int(page)
         created_from_main_listing = (page == 0)
@@ -137,7 +140,8 @@ def create_favourite_amv_list(page):
         for amv in AmvNewsBrowser().get_favourite_amv_list(page):
             context_menu = [
                 (PLUGIN.get_string(10004), 'RunPlugin(%s)' % PLUGIN.url_for('evaluate', amv_id=amv['id'])),
-                (PLUGIN.get_string(10009), 'RunPlugin(%s)' % PLUGIN.url_for('remove_from_favourites', amv_id=amv['id']))
+                (PLUGIN.get_string(10009), 'RunPlugin(%s)' % PLUGIN.url_for('remove_from_favourites', amv_id=amv['id'])),
+                (PLUGIN.get_string(10010), 'RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv['id'])),
             ]
             items.append(_create_amv_item(amv, context_menu))
         items.append(_create_next_page_item('create_favourite_amv_list', page))
@@ -190,6 +194,25 @@ def play(amv_id, subtitles_id=None):
     PLUGIN.set_resolved_url(video_path, subtitles_path)
 
 
+@PLUGIN.route('/download/<amv_id>')
+def download(amv_id):
+    """
+    Download AMV.
+    :param int amv_id: AMV identifier.
+    """
+    if not PLUGIN.get_setting('download_path'):
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10011))
+    else:
+        browser = AmvNewsBrowser()
+        amv_info = browser.get_amv(int(amv_id))
+
+        pDialog = xbmcgui.DialogProgressBG()
+        pDialog.create(PLUGIN.name, PLUGIN.get_string(10012) % amv_info['amv']['title'])
+        browser.download(PLUGIN.get_setting('download_path'), amv_info['id'], _choose_subtitles(amv_info))
+        pDialog.close()
+        xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
+        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10013) % amv_info['amv']['title'])
+
 def _create_next_page_item(view_name, current_page):
     """
     Create list item to show next page of view.
@@ -237,15 +260,7 @@ def _create_amv_item(amv_info, context_menu):
     """
     amv_id = amv_info['id']
     if amv_info['subtitles']:
-        if PLUGIN.get_setting('subtitles_lang') == '0':
-            subtitles_lang = Language.Russian
-        elif PLUGIN.get_setting('subtitles_lang') == '1':
-            subtitles_lang = Language.English
-        preferable_subtitles = filter(lambda x: x[0] == subtitles_lang, amv_info['subtitles'])
-        if preferable_subtitles:
-            path = PLUGIN.url_for('play_with_subtitles', amv_id=amv_id, subtitles_id=preferable_subtitles[0][1])
-        else:
-            path = PLUGIN.url_for('play_with_subtitles', amv_id=amv_id, subtitles_id=amv_info['subtitles'][0][1])
+        path = PLUGIN.url_for('play_with_subtitles', amv_id=amv_id, subtitles_id=_choose_subtitles(amv_info))
     else:
         path = PLUGIN.url_for('play', amv_id=amv_id)
 
@@ -284,3 +299,28 @@ def _create_amv_item(amv_info, context_menu):
             }
         }
     }
+
+
+def _choose_subtitles(amv_info):
+    """
+    Choose best subtitles for AMV.
+
+    :param dict amv_info: AMV information
+    :return: Subtitles identifier.
+    :rtype: int
+    """
+    if not amv_info['subtitles']:
+        return None
+
+    if PLUGIN.get_setting('subtitles_lang') == '0':
+        subtitles_lang = Language.Russian
+    elif PLUGIN.get_setting('subtitles_lang') == '1':
+        subtitles_lang = Language.English
+
+    preferable_subtitles = filter(lambda x: x[0] == subtitles_lang, amv_info['subtitles'])
+    if preferable_subtitles:
+        subtitles_id = preferable_subtitles[0][1]
+    else:
+        subtitles_id = amv_info['subtitles'][0][1]
+
+    return subtitles_id
