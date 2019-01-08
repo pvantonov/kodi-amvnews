@@ -158,6 +158,8 @@ def evaluate(amv_id):
     """
     chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, xrange(10202, 10207))) + 1
     AmvNewsBrowser().set_amv_mark(int(amv_id), chosen_mark)
+    if PLUGIN.get_setting('download_evaluated', bool) and (PLUGIN.get_setting('download_treshold', int) + 1) <= chosen_mark:
+        xbmc.executebuiltin('RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv_id))
 
 
 @PLUGIN.route('/favourite/add/<amv_id>')
@@ -168,6 +170,8 @@ def add_to_favourites(amv_id):
     :param int amv_id: AMV identifier.
     """
     AmvNewsBrowser().add_amv_to_favourites(int(amv_id))
+    if PLUGIN.get_setting('download_favorits', bool):
+        xbmc.executebuiltin('RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv_id))
 
 
 @PLUGIN.route('/favourite/remove/<amv_id>')

@@ -8,11 +8,9 @@
         <setting label="10105" type="enum" id="subtitles_lang" lvalues="10106|10107" default="0"/>
     </category>
     <category label="10108">
-        <setting label="10102" type="text" id="username" default="" visible="false"/>
-        <setting label="10103" type="text" id="password" option="hidden" default="" visible="false"/>
         <setting label="10109" type="folder" id="download_path" source="auto" option="writable" />
-        <setting label="10110" type="bool" id="download_favorits" enable="!eq(-2,) + !eq(-3,)" default="false"/>
-        <setting label="10111" type="bool" id="download_evaluated" enable="!eq(-3,) + !eq(-4,)" default="false"/>
-        <setting label="10112" type="enum" subsetting="true" id="download_treshold" lvalues="10202|10203|10204|10205|10206" enable="!eq(-4,) + !eq(-5,) + eq(-1,true)" default="3"/>
+        <setting label="10110" type="bool" id="download_favorits" default="false"/>
+        <setting label="10111" type="bool" id="download_evaluated" default="false"/>
+        <setting label="10112" type="enum" subsetting="true" id="download_treshold" lvalues="10202|10203|10204|10205|10206" enable="eq(-1,true)" default="3"/>
     </category>
 </settings>
