@@ -37,7 +37,7 @@ msgid "Evaluated Amv"
 msgstr ""
 
 msgctxt "#10007"
-msgid "You must specify your login and password for AmvNews"
+msgid "You must specify your login and password for AmvNews in plugin's configuration"
 msgstr ""
 
 msgctxt "#10008"
@@ -46,6 +46,30 @@ msgstr ""
 
 msgctxt "#10009"
 msgid "Remove from favourites on AmvNews"
+msgstr ""
+
+msgctxt "#10010"
+msgid "Download"
+msgstr ""
+
+msgctxt "#10011"
+msgid "You must assign download location in plugin's configuration"
+msgstr ""
+
+msgctxt "#10012"
+msgid "Downloading %s..."
+msgstr ""
+
+msgctxt "#10013"
+msgid "%s is downloaded"
+msgstr ""
+
+msgctxt "#10014"
+msgid "AMV searching..."
+msgstr ""
+
+msgctxt "#10015"
+msgid "All AMVs are downloaded"
 msgstr ""
 
 msgctxt "#10101"
@@ -74,6 +98,34 @@ msgstr ""
 
 msgctxt "#10107"
 msgid "English"
+msgstr ""
+
+msgctxt "#10108"
+msgid "Download"
+msgstr ""
+
+msgctxt "#10109"
+msgid "Download path"
+msgstr ""
+
+msgctxt "#10110"
+msgid "Download favourites"
+msgstr ""
+
+msgctxt "#10111"
+msgid "Download evaluated"
+msgstr ""
+
+msgctxt "#10112"
+msgid "not worse than"
+msgstr ""
+
+msgctxt "#10113"
+msgid "Download favourites..."
+msgstr ""
+
+msgctxt "#10114"
+msgid "Download evaluated..."
 msgstr ""
 
 msgctxt "#10201"
