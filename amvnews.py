@@ -323,11 +323,13 @@ class AmvNewsBrowser(object):
         """
         images = []
         main_image_tag = html.find(itemprop='image')
+        main_image_alt = None
         if main_image_tag:
             images.append('http://amvnews.ru{}'.format(main_image_tag.attrs['src']))
+            main_image_alt = main_image_tag.attrs['alt']
 
         title = html.find('h1', itemprop='name').text.strip()
-        for image_tag in html.find_all('img', alt=title):
+        for image_tag in html.find_all('img', alt=[title, main_image_alt]):
             image_url = 'http://amvnews.ru{}'.format(image_tag.attrs['src'])
             if image_url not in images:
                 images.append('http://amvnews.ru{}'.format(image_tag.attrs['src']))
