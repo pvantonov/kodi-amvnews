@@ -9,8 +9,10 @@
     </category>
     <category label="10108">
         <setting label="10109" type="folder" id="download_path" source="auto" option="writable" />
-        <setting label="10110" type="bool" id="download_favorits" default="false"/>
+        <setting label="10110" type="bool" id="download_favourites" default="false"/>
         <setting label="10111" type="bool" id="download_evaluated" default="false"/>
         <setting label="10112" type="enum" subsetting="true" id="download_treshold" lvalues="10202|10203|10204|10205|10206" enable="eq(-1,true)" default="3"/>
+        <setting label="10113" id="do_download_favourites" type="action" action="RunPlugin(plugin://$ID/download_favourites)"/>
+        <setting label="10114" id="do_download_evaluated" type="action" action="RunPlugin(plugin://$ID/download_evaluated)"/>
     </category>
 </settings>

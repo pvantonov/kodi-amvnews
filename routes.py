@@ -170,7 +170,7 @@ def add_to_favourites(amv_id):
     :param int amv_id: AMV identifier.
     """
     AmvNewsBrowser().add_amv_to_favourites(int(amv_id))
-    if PLUGIN.get_setting('download_favorits', bool):
+    if PLUGIN.get_setting('download_favourites', bool):
         xbmc.executebuiltin('RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv_id))
 
 
@@ -216,6 +216,76 @@ def download(amv_id):
         pDialog.close()
         xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
         xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10013) % amv_info['amv']['title'])
+
+
+@PLUGIN.route('/download_favourites')
+def download_favourites():
+    """
+    Download all favourites AMVs.
+    """
+    if not PLUGIN.get_setting('username') or not PLUGIN.get_setting('password'):
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10007))
+    elif not PLUGIN.get_setting('download_path'):
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10011))
+    else:
+        page = 1
+        amv_list = []
+        browser = AmvNewsBrowser()
+
+        pDialog = xbmcgui.DialogProgressBG()
+        pDialog.create(PLUGIN.name, PLUGIN.get_string(10014))
+
+        while True:
+            amv_chunk = browser.get_favourite_amv_list(page)
+            if amv_chunk:
+                amv_list.extend(amv_chunk)
+                page += 1
+            else:
+                break
+
+        for i, amv_info in enumerate(amv_list):
+            pDialog.update(i * 100 // len(amv_list), PLUGIN.name, PLUGIN.get_string(10012) % amv_info['amv']['title'])
+            browser.download(PLUGIN.get_setting('download_path'), amv_info['id'], _choose_subtitles(amv_info))
+
+        pDialog.close()
+        xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
+        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10015))
+
+
+@PLUGIN.route('/download_evaluated')
+def download_evaluated():
+    """
+    Download all evaluated AMVs.
+    """
+    if not PLUGIN.get_setting('username') or not PLUGIN.get_setting('password'):
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10007))
+    elif not PLUGIN.get_setting('download_path'):
+        xbmcgui.Dialog().ok(PLUGIN.name, PLUGIN.get_string(10011))
+    else:
+        page = 1
+        amv_list = []
+        browser = AmvNewsBrowser()
+
+        pDialog = xbmcgui.DialogProgressBG()
+        pDialog.create(PLUGIN.name, PLUGIN.get_string(10014))
+
+        while True:
+            amv_chunk = filter(
+                lambda x: int(x['amv']['user_rating']) >= (PLUGIN.get_setting('download_treshold', int) + 1),
+                browser.get_evaluated_amv_list(page))
+            if amv_chunk:
+                amv_list.extend(amv_chunk)
+                page += 1
+            else:
+                break
+
+        for i, amv_info in enumerate(amv_list):
+            pDialog.update(i * 100 // len(amv_list), PLUGIN.name, PLUGIN.get_string(10012) % amv_info['amv']['title'])
+            browser.download(PLUGIN.get_setting('download_path'), amv_info['id'], _choose_subtitles(amv_info))
+
+        pDialog.close()
+        xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
+        xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10015))
 
 def _create_next_page_item(view_name, current_page):
     """

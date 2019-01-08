@@ -64,6 +64,14 @@ msgctxt "#10013"
 msgid "%s is downloaded"
 msgstr ""
 
+msgctxt "#10014"
+msgid "AMV searching..."
+msgstr ""
+
+msgctxt "#10015"
+msgid "All AMVs are downloaded"
+msgstr ""
+
 msgctxt "#10101"
 msgid "Authentication"
 msgstr ""
@@ -101,7 +109,7 @@ msgid "Download path"
 msgstr ""
 
 msgctxt "#10110"
-msgid "Download favorits"
+msgid "Download favourites"
 msgstr ""
 
 msgctxt "#10111"
@@ -110,6 +118,14 @@ msgstr ""
 
 msgctxt "#10112"
 msgid "not worse than"
+msgstr ""
+
+msgctxt "#10113"
+msgid "Download favourites..."
+msgstr ""
+
+msgctxt "#10114"
+msgid "Download evaluated..."
 msgstr ""
 
 msgctxt "#10201"

@@ -89,7 +89,7 @@ class AmvNewsBrowser(object):
 
         :param int page: Page number.
         :return: List of evaluated AMV metadata.
-        :rtype: dict
+        :rtype: list[dict]
         """
         html = self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'votes'})
 
@@ -107,7 +107,7 @@ class AmvNewsBrowser(object):
 
         :param int page: Page number.
         :return: List of favourite AMV metadata.
-        :rtype: dict
+        :rtype: list[dict]
         """
         html = self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'favor'})
 
