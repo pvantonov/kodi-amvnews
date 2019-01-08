@@ -1,3 +1,12 @@
+## [3.0.0] - 2019-01-08
+### Added
+- Ability to download AMV automatically
+- Ability to download AMV manually
+- Ability to download all favourites or evaluated AMVs
+
+### Improved
+- AMV thumbs detection
+
 ## [2.1.1] - 2018-03-12
 ### Fixed
 - Character combination '&#...' is parsed properly
