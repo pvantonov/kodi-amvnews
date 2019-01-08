@@ -4,8 +4,11 @@ Unofficial API to http://amvnews.ru.
 """
 import datetime
 import urllib
+import os
 import re
 import requests
+from shutil import copyfile
+from xml.etree import ElementTree as etree
 from bs4 import BeautifulSoup
 from constants import PLUGIN
 from helpers import Singleton, Language
@@ -86,7 +89,7 @@ class AmvNewsBrowser(object):
 
         :param int page: Page number.
         :return: List of evaluated AMV metadata.
-        :rtype: dict
+        :rtype: list[dict]
         """
         html = self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'votes'})
 
@@ -104,7 +107,7 @@ class AmvNewsBrowser(object):
 
         :param int page: Page number.
         :return: List of favourite AMV metadata.
-        :rtype: dict
+        :rtype: list[dict]
         """
         html = self._get_html_page({'go': 'Files', 'page': (page - 1) * 10, 'file': 'favor'})
 
@@ -120,8 +123,10 @@ class AmvNewsBrowser(object):
         :return: AMV metadata.
         :rtype: dict
         """
+        format_version = 5
+
         storage = PLUGIN.get_storage('amv_metadata')
-        if amv_id in storage and storage[amv_id].get('format', 0) == 4:
+        if amv_id in storage and storage[amv_id].get('format', 0) == format_version:
             if (datetime.datetime.now() - storage[amv_id]['timestamp']).days < 3:
                 return storage[amv_id]
 
@@ -130,7 +135,7 @@ class AmvNewsBrowser(object):
         metadata = {
             'id': amv_id,
             'timestamp': datetime.datetime.now(),
-            'format': 4,
+            'format': format_version,
             'amv': {
                 'title': html.find('h1', itemprop='name').text.strip(),
                 'description': html.find(itemprop='description').text.strip(),
@@ -183,6 +188,79 @@ class AmvNewsBrowser(object):
         :param int amv_id: Identifier of AMV.
         """
         self.session.get(self.homepage, params={'go': 'Files', 'in': 'delfav', 'id': amv_id})
+
+    def download(self, save_path, amv_id, subtitles_id=None):
+        """
+        Download AMV and save it on local path.
+
+        :param str save_path: Local path where AMV will be saved.
+        :param int amv_id: Identifier of AMV.
+        :param int subtitles_id: Identifier of AMV subtitles.
+        """
+        sync_file = os.path.join(save_path, '%d.sync' % amv_id)
+        if os.path.isfile(sync_file):
+            # AMV is already downloaded
+            return
+
+        amv_info = self.get_amv(amv_id)
+
+        self._download_file(self.get_amv_url(amv_id), save_path, str(amv_id))
+        self._create_nfo_file(save_path, amv_info)
+
+        if amv_info['images']:
+            self._download_file(amv_info['images'][0], save_path, '%d-poster' % amv_id)
+            if len(amv_info['images']) > 1:
+                self._download_file(amv_info['images'][1], save_path, '%d-fanart' % amv_id)
+
+        if subtitles_id:
+            self._download_file(self.get_subtitles_url(subtitles_id), save_path, str(amv_id))
+
+        with open(sync_file, 'a'):
+            os.utime(sync_file, None)
+
+    def _create_nfo_file(self, save_path, amv_info):
+        """
+        Create .nfo file
+
+        :param str save_path: Local path where AMV will be saved.
+        :param dict amv_info: AMV information.
+        """
+        music_video = etree.Element('musicvideo')
+        etree.SubElement(music_video, 'title').text = amv_info['amv']['title']
+        etree.SubElement(music_video, 'userrating').text = str(amv_info['amv']['user_rating'] * 2)
+        etree.SubElement(music_video, 'plot').text = amv_info['amv']['description']
+        etree.SubElement(music_video, 'year').text = amv_info['amv']['aired'].split('-')[0]
+        etree.SubElement(music_video, 'dateadded').text = amv_info['amv']['added']
+        etree.SubElement(music_video, 'director').text = amv_info['amv']['author']
+        etree.SubElement(music_video, 'playcount').text = '1'
+        for genre in amv_info['amv']['genre'].split(','):
+            etree.SubElement(music_video, 'genre').text = genre.strip()
+
+        tree = etree.ElementTree(music_video)
+        tree.write(os.path.join(save_path, '%d.nfo' % amv_info['id']), encoding='utf-8', xml_declaration=True)
+
+    @staticmethod
+    def _download_file(url, path, filename):
+        """
+        Download file.
+
+        :param str url: URL of the file.
+        :param str path: Local path where file will be saved.
+        :param str filename: Filename to be assigned to the downloaded file.
+        :return: Full path to the downloaded file.
+        :rtype: str
+        """
+        response = requests.get(url, stream=True)
+        extension = response.url.rsplit('.', 1)[1]
+        filename = '%s.%s' % (filename, extension)
+
+        full_path = os.path.join(path, filename)
+
+        with open(os.path.join(path, filename), 'wb') as f:
+            for chunk in response.iter_content(chunk_size=128):
+                f.write(chunk)
+        
+        return full_path
 
     @classmethod
     def _get_full_url(cls, url_params):
@@ -245,12 +323,16 @@ class AmvNewsBrowser(object):
         """
         images = []
         main_image_tag = html.find(itemprop='image')
+        main_image_alt = None
         if main_image_tag:
             images.append('http://amvnews.ru{}'.format(main_image_tag.attrs['src']))
+            main_image_alt = main_image_tag.attrs['alt']
 
         title = html.find('h1', itemprop='name').text.strip()
-        for image_tag in html.find_all('img', alt=title):
-            images.append('http://amvnews.ru{}'.format(image_tag.attrs['src']))
+        for image_tag in html.find_all('img', alt=[title, main_image_alt]):
+            image_url = 'http://amvnews.ru{}'.format(image_tag.attrs['src'])
+            if image_url not in images:
+                images.append('http://amvnews.ru{}'.format(image_tag.attrs['src']))
 
         return images
 
