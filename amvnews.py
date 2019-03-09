@@ -12,6 +12,8 @@ from xml.etree import ElementTree as etree
 from bs4 import BeautifulSoup
 from constants import PLUGIN
 from helpers import Singleton, Language
+import xbmc
+import xbmcvfs
 
 __all__ = ['AmvNewsBrowser']
 
@@ -198,7 +200,7 @@ class AmvNewsBrowser(object):
         :param int subtitles_id: Identifier of AMV subtitles.
         """
         sync_file = os.path.join(save_path, '%d.sync' % amv_id)
-        if os.path.isfile(sync_file):
+        if xbmcvfs.exists(sync_file):
             # AMV is already downloaded
             return
 
@@ -215,8 +217,10 @@ class AmvNewsBrowser(object):
         if subtitles_id:
             self._download_file(self.get_subtitles_url(subtitles_id), save_path, str(amv_id))
 
-        with open(sync_file, 'a'):
-            os.utime(sync_file, None)
+        try:
+            f = xbmcvfs.File(sync_file, 'w')
+        finally:
+            f.close()
 
     def _create_nfo_file(self, save_path, amv_info):
         """
@@ -237,7 +241,12 @@ class AmvNewsBrowser(object):
             etree.SubElement(music_video, 'genre').text = genre.strip()
 
         tree = etree.ElementTree(music_video)
-        tree.write(os.path.join(save_path, '%d.nfo' % amv_info['id']), encoding='utf-8', xml_declaration=True)
+
+        temp_fullpath = xbmc.translatePath(os.path.join('special://temp', '%d.nfo' % amv_info['id']))
+        save_fullpath = os.path.join(save_path, '%d.nfo' % amv_info['id'])
+        tree.write(temp_fullpath, encoding='utf-8', xml_declaration=True)
+        xbmcvfs.copy(temp_fullpath, save_fullpath)
+        xbmcvfs.delete(temp_fullpath)
 
     @staticmethod
     def _download_file(url, path, filename):
@@ -256,10 +265,13 @@ class AmvNewsBrowser(object):
 
         full_path = os.path.join(path, filename)
 
-        with open(os.path.join(path, filename), 'wb') as f:
+        try:
+            f = xbmcvfs.File(os.path.join(path, filename), 'w')
             for chunk in response.iter_content(chunk_size=128):
                 f.write(chunk)
-        
+        finally:
+            f.close()
+
         return full_path
 
     @classmethod
