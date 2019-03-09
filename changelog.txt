@@ -1,3 +1,7 @@
+## [3.1.0] - 2019-03-09
+### Added
+- Possibility to use samba path as download location
+
 ## [3.0.0] - 2019-01-08
 ### Added
 - Ability to download AMV automatically
