@@ -3,11 +3,10 @@
 Unofficial API to http://amvnews.ru.
 """
 import datetime
-import urllib
+import urllib.parse
 import os
 import re
 import requests
-from shutil import copyfile
 from xml.etree import ElementTree as etree
 from bs4 import BeautifulSoup
 from constants import PLUGIN
@@ -283,7 +282,7 @@ class AmvNewsBrowser(object):
         :return: Full URL.
         :rtype: str
         """
-        return '{}?{}'.format(cls.homepage, urllib.urlencode(url_params))
+        return '{}?{}'.format(cls.homepage, urllib.parse.urlencode(url_params))
 
     def _get_html_page(self, url_params):
         """
@@ -422,11 +421,11 @@ class AmvNewsBrowser(object):
         return subtitles
 
 
-REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\d+).*$', re.S)
-REGEX_AMV_SUB_ID = re.compile(u'^.*sub=(?P<id>\d+).*$', re.S)
-REGEX_AMV_SIZE = re.compile(u'^.*Размер</b>: ((?P<size>[\d.]+) Мб)?.*$', re.S)
+REGEX_AMV_ID = re.compile(u'^.*id=(?P<id>\\d+).*$', re.S)
+REGEX_AMV_SUB_ID = re.compile(u'^.*sub=(?P<id>\\d+).*$', re.S)
+REGEX_AMV_SIZE = re.compile(u'^.*Размер</b>: ((?P<size>[\\d.]+) Мб)?.*$', re.S)
 REGEX_AMV_CODECS = re.compile(u'^.*Кодеки</b>: (?P<video>.+?)/(?P<audio>.+?)<BR>.*$', re.S)
-REGEX_AMV_RESOLUTION = re.compile(u'^.*Разрешение</b>: (?P<width>\d+)x(?P<height>\d+)@(?P<fps>[\d.]+).*$', re.S)
-REGEX_AMV_DURATION = re.compile(u'^.*Длительность</b>: ((?P<min>\d+) мин )?((?P<sec>\d+) сек)?.*$', re.S)
-REGEX_AMV_AIRED = re.compile(u'^.*(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4}).*$', re.S)
-REGEX_AMV_ADDED = re.compile(u'^.*(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4}).*(?P<hour>\d{2}):(?P<minute>\d{2}).*$', re.S)  # noqa
+REGEX_AMV_RESOLUTION = re.compile(u'^.*Разрешение</b>: (?P<width>\\d+)x(?P<height>\\d+)@(?P<fps>[\\d.]+).*$', re.S)
+REGEX_AMV_DURATION = re.compile(u'^.*Длительность</b>: ((?P<min>\\d+) мин )?((?P<sec>\\d+) сек)?.*$', re.S)
+REGEX_AMV_AIRED = re.compile(u'^.*(?P<day>\\d{2})\\.(?P<month>\\d{2})\\.(?P<year>\\d{4}).*$', re.S)
+REGEX_AMV_ADDED = re.compile(u'^.*(?P<day>\\d{2})\\.(?P<month>\\d{2})\\.(?P<year>\\d{4}).*(?P<hour>\\d{2}):(?P<minute>\\d{2}).*$', re.S)  # noqa

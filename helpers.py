@@ -2,7 +2,7 @@
 """
 Helpers.
 """
-from resources.lib.enum import Enum
+from enum import Enum
 
 __all__ = ['Singleton', 'Language']
 

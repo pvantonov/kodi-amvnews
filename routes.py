@@ -156,7 +156,7 @@ def evaluate(amv_id):
 
     :param int amv_id: AMV identifier.
     """
-    chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, xrange(10202, 10207))) + 1
+    chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, range(10202, 10207))) + 1
     AmvNewsBrowser().set_amv_mark(int(amv_id), chosen_mark)
     if PLUGIN.get_setting('download_evaluated', bool) and (PLUGIN.get_setting('download_treshold', int) + 1) <= chosen_mark:
         xbmc.executebuiltin('RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv_id))
@@ -287,6 +287,7 @@ def download_evaluated():
         xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
         xbmcgui.Dialog().notification(PLUGIN.name, PLUGIN.get_string(10015))
 
+
 def _create_next_page_item(view_name, current_page):
     """
     Create list item to show next page of view.
@@ -391,7 +392,7 @@ def _choose_subtitles(amv_info):
     elif PLUGIN.get_setting('subtitles_lang') == '1':
         subtitles_lang = Language.English
 
-    preferable_subtitles = filter(lambda x: x[0] == subtitles_lang, amv_info['subtitles'])
+    preferable_subtitles = list(filter(lambda x: x[0] == subtitles_lang, amv_info['subtitles']))
     if preferable_subtitles:
         subtitles_id = preferable_subtitles[0][1]
     else:
