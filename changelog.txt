@@ -1,3 +1,8 @@
+## [4.1.0] - 2021-10-09
+### Fixed
+- Authentication
+- AMV Evaluation
+
 ## [4.0.0] - 2021-02-27
 ### Added
 - Kodi 19 compatibility

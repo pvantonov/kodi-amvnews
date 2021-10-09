@@ -49,7 +49,7 @@ def create_featured_amv_list(page):
     Create list of featured AMV for specified page.
 
     To avoid heavy queries featured AMV are demonstrated by small portions
-    (pages). Each page is constucted independently by demand.
+    (pages). Each page is constructed independently by demand.
 
     :param int page: Page number.
     :return: List of featured AMV.
@@ -85,7 +85,7 @@ def create_evaluated_amv_list(page):
     Create list of evaluated AMV for specified page.
 
     To avoid heavy queries featured AMV are demonstrated by small portions
-    (pages). Each page is constucted independently by demand.
+    (pages). Each page is constructed independently by demand.
 
     :param int page: Page number.
     :return: List of evaluated AMV.
@@ -120,7 +120,7 @@ def create_favourite_amv_list(page):
     Create list of favourite AMV for specified page.
 
     To avoid heavy queries featured AMV are demonstrated by small portions
-    (pages). Each page is constucted independently by demand.
+    (pages). Each page is constructed independently by demand.
 
     :param int page: Page number.
     :return: List of favourite AMV.
@@ -156,7 +156,7 @@ def evaluate(amv_id):
 
     :param int amv_id: AMV identifier.
     """
-    chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), map(PLUGIN.get_string, range(10202, 10207))) + 1
+    chosen_mark = xbmcgui.Dialog().select(PLUGIN.get_string(10201), list(map(PLUGIN.get_string, range(10202, 10207)))) + 1
     AmvNewsBrowser().set_amv_mark(int(amv_id), chosen_mark)
     if PLUGIN.get_setting('download_evaluated', bool) and (PLUGIN.get_setting('download_treshold', int) + 1) <= chosen_mark:
         xbmc.executebuiltin('RunPlugin(%s)' % PLUGIN.url_for('download', amv_id=amv_id))
